@@ -1,8 +1,27 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class CalculatorView extends StatelessWidget {
+class CalculatorView extends StatefulWidget {
   const CalculatorView({super.key});
+
+  @override
+  State<CalculatorView> createState() => _CalculatorViewState();
+}
+
+class _CalculatorViewState extends State<CalculatorView> {
+  int x = 0;
+  int y = 0;
+  num z = 0;
+
+  final displayOneController = TextEditingController();
+  final displayTwoController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    displayOneController.text = x.toString();
+    displayTwoController.text = y.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,17 +29,19 @@ class CalculatorView extends StatelessWidget {
       padding: const EdgeInsets.all(32.0),
       child: Column(
         children: [
-          const DisplayOne(hint: "Enter First Number"),
+          CalculatorDisplay(
+              hint: "Enter First Number", controller: displayOneController),
           const SizedBox(
             height: 30,
           ),
-          const DisplayOne(hint: "Enter  Second Number"),
+          CalculatorDisplay(
+              hint: "Enter  Second Number", controller: displayTwoController),
           const SizedBox(
             height: 30,
           ),
-          const Text(
-            "0",
-            style: TextStyle(
+          Text(
+            z.toString(),
+            style: const TextStyle(
               fontSize: 60,
               fontWeight: FontWeight.bold,
             ),
@@ -30,13 +51,33 @@ class CalculatorView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               FloatingActionButton(
-                  onPressed: () {}, child: const Icon(Icons.add)),
+                  onPressed: () {
+                    setState(() {
+                      z = num.tryParse(displayOneController.text)! +
+                          num.tryParse(displayTwoController.text)!;
+                    });
+                  },
+                  child: const Icon(Icons.add)),
               FloatingActionButton(
-                  onPressed: () {}, child: const Icon(CupertinoIcons.minus)),
+                  onPressed: () {
+                    z = x - y;
+                  },
+                  child: const Icon(CupertinoIcons.minus)),
               FloatingActionButton(
-                  onPressed: () {}, child: const Icon(CupertinoIcons.multiply)),
+                  onPressed: () {
+                    z = x * y;
+                  },
+                  child: const Icon(CupertinoIcons.multiply)),
               FloatingActionButton(
-                  onPressed: () {}, child: const Icon(CupertinoIcons.divide)),
+                  onPressed: () {
+                    z = x / y;
+                  },
+                  child: const Icon(CupertinoIcons.divide)),
+              FloatingActionButton.extended(
+                  onPressed: () {
+                    z = x / y;
+                  },
+                  label: const Icon(CupertinoIcons.clear)),
             ],
           )
         ],
@@ -45,12 +86,16 @@ class CalculatorView extends StatelessWidget {
   }
 }
 
-class DisplayOne extends StatelessWidget {
-  const DisplayOne({super.key, this.hint = "Enter a number"});
+class CalculatorDisplay extends StatelessWidget {
+  const CalculatorDisplay(
+      {super.key, required this.controller, this.hint = "Enter a number"});
+
   final String? hint;
+  final TextEditingController controller;
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       keyboardType: TextInputType.number,
       autofocus: true,
       keyboardAppearance: Brightness.light,
