@@ -1,3 +1,8 @@
+// ignore_for_file: avoid_print
+
+// ignore: unused_import
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -15,12 +20,47 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   final displayOneController = TextEditingController();
   final displayTwoController = TextEditingController();
+  late final AppLifecycleListener _listener;
 
   @override
   void initState() {
     super.initState();
     displayOneController.text = x.toString();
     displayTwoController.text = y.toString();
+    _listener = AppLifecycleListener(
+      onShow: _onShow,
+      onHide: _onHide,
+      onResume: _onResume,
+      onDetach: _onDetach,
+      onInactive: _onInactive,
+      onPause: _onPause,
+      onRestart: _onRestart,
+      onStateChange: _onStateChange,
+    );
+  }
+
+  void _onShow() => print("onShow Called");
+  void _onHide() => print("onHide called");
+
+  void _onResume() => print("onResume Called");
+
+  void _onDetach() => print("onDetach Called");
+
+  void _onInactive() => print("onInactive Called");
+
+  void _onPause() => print("onPause Called");
+
+  void _onRestart() => print("onRestart Called");
+
+  void _onStateChange(AppLifecycleState state) =>
+      print("onStateChange Called with state:$state");
+
+  @override
+  void dispose() {
+    displayOneController.dispose();
+    displayTwoController.dispose();
+    _listener.dispose();
+    super.dispose();
   }
 
   @override
@@ -30,16 +70,21 @@ class _CalculatorViewState extends State<CalculatorView> {
       child: Column(
         children: [
           CalculatorDisplay(
-              hint: "Enter First Number", controller: displayOneController),
+              key: Key("displayOne"),
+              hint: "Enter First Number",
+              controller: displayOneController),
           const SizedBox(
             height: 30,
           ),
           CalculatorDisplay(
-              hint: "Enter  Second Number", controller: displayTwoController),
+              key: Key("displayTwo"),
+              hint: "Enter  Second Number",
+              controller: displayTwoController),
           const SizedBox(
             height: 30,
           ),
           Text(
+            key: Key("Result"),
             z.toString(),
             style: const TextStyle(
               fontSize: 60,
@@ -57,29 +102,47 @@ class _CalculatorViewState extends State<CalculatorView> {
                           num.tryParse(displayTwoController.text)!;
                     });
                   },
-                  child: const Icon(Icons.add)),
+                  child: const Icon(CupertinoIcons.add)),
               FloatingActionButton(
                   onPressed: () {
-                    z = x - y;
+                    setState(() {
+                      z = num.tryParse(displayOneController.text)! -
+                          num.tryParse(displayTwoController.text)!;
+                    });
                   },
                   child: const Icon(CupertinoIcons.minus)),
               FloatingActionButton(
                   onPressed: () {
-                    z = x * y;
+                    setState(() {
+                      z = num.tryParse(displayOneController.text)! *
+                          num.tryParse(displayTwoController.text)!;
+                    });
                   },
                   child: const Icon(CupertinoIcons.multiply)),
               FloatingActionButton(
                   onPressed: () {
-                    z = x / y;
+                    setState(() {
+                      z = num.tryParse(displayOneController.text)! /
+                          num.tryParse(displayTwoController.text)!;
+                    });
                   },
                   child: const Icon(CupertinoIcons.divide)),
-              FloatingActionButton.extended(
-                  onPressed: () {
-                    z = x / y;
-                  },
-                  label: const Icon(CupertinoIcons.clear)),
             ],
-          )
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton.extended(
+              onPressed: () {
+                setState(() {
+                  x = 0;
+                  y = 0;
+                  z = 0;
+                  displayOneController.clear();
+                  displayTwoController.clear();
+                });
+              },
+              label: const Text("Clear ")),
         ],
       ),
     );
